@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>輿情分析系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px;
+            background: #f0f0f0;
+            border: 2px dashed #667eea;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-wrapper input[type="file"]:focus + .file-input-label {
+            border-color: #764ba2;
+            background: #f9f9f9;
+        }
+
+        .file-input-label:hover {
+            background: #fafafa;
+            border-color: #764ba2;
+        }
+
+        .file-name {
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .results-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .summary-card .percentage {
+            font-size: 1.1em;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .details-table thead {
+            background: #f5f5f5;
+        }
+
+        .details-table th {
+            padding: 12px;
+            text-align: left;
+            color: #333;
+            font-weight: 600;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .details-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #666;
+        }
+
+        .details-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .sentiment-positive {
+            color: #48bb78;
+            font-weight: 600;
+        }
+
+        .sentiment-neutral {
+            color: #ed8936;
+            font-weight: 600;
+        }
+
+        .sentiment-negative {
+            color: #f56565;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #48bb78;
+        }
+
+        .message.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 4px solid #f56565;
+        }
+
+        .message.info {
+            background: #bee3f8;
+            color: #2c5282;
+            border-left: 4px solid #4299e1;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .export-buttons button {
+            flex: 1;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .comment-text {
+            max-height: 100px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .analysis-text {
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .details-table {
+                font-size: 0.9em;
+            }
+
+            .details-table th,
+            .details-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 輿情分析系統</h1>
+            <p>AI 驅動的智能輿情分析平台</p>
+        </header>
+
+        <div class="main-content">
+            <!-- 手動輸入卡片 -->
+            <div class="card">
+                <h2>📝 手動輸入評論</h2>
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('manual-text')">文字輸入</button>
+                    <button class="tab-btn" onclick="switchTab('manual-file')">檔案上傳</button>
+                </div>
+
+                <!-- 文字輸入標籤 -->
+                <div id="manual-text" class="tab-content active">
+                    <div class="form-group">
+                        <label for="commentsInput">請輸入評論（每行一條）：</label>
+                        <textarea id="commentsInput" placeholder="請輸入評論內容，每行一條..." style="font-family: 'Courier New', monospace;"></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="analyzeManual()">開始分析</button>
+                        <button class="btn-secondary" onclick="clearManualInput()">清空</button>
+                    </div>
+                </div>
+
+                <!-- 檔案上傳標籤 -->
+                <div id="manual-file" class="tab-content">
+                    <div class="form-group">
+                        <label>選擇檔案（支援 TXT、JSON、CSV、Excel）：</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="fileInput" accept=".txt,.json,.csv,.xlsx,.xls" onchange="handleFileSelect()">
+                            <label for="fileInput" class="file-input-label">
+                                📁 點擊選擇檔案或拖放檔案
+                            </label>
+                        </div>
+                        <div id="fileName" class="file-name"></div>
+                    </div>
+
+                    <!-- CSV/Excel 欄位設定 -->
+                    <div id="csvOptions" class="form-group" style="display: none;">
+                        <label for="columnName">評論欄位名稱（預設：comment）：</label>
+                        <input type="text" id="columnName" placeholder="comment" value="comment">
+                    </div>
+
+                    <div id="jsonOptions" class="form-group" style="display: none;">
+                        <label for="columnKey">JSON 鍵值（留空自動尋找）：</label>
+                        <input type="text" id="columnKey" placeholder="comments">
+                    </div>
+
+                    <div id="excelOptions" class="form-group" style="display: none;">
+                        <label for="sheetName">工作表索引或名稱（預設：0）：</label>
+                        <input type="text" id="sheetName" placeholder="0" value="0">
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="analyzeFile()">開始分析</button>
+                        <button class="btn-secondary" onclick="clearFileInput()">清除</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 範例資料卡片 -->
+            <div class="card">
+                <h2>📚 快速開始</h2>
+                <p style="color: #666; margin-bottom: 20px;">
+                    點擊下方按鈕使用範例資料快速體驗系統功能
+                </p>
+                <button class="btn-success" onclick="analyzeSample()" style="width: 100%; margin-bottom: 10px;">
+                    🚀 使用範例資料分析
+                </button>
+                <p style="color: #999; font-size: 0.9em; margin-top: 20px;">
+                    <strong>TIP：</strong>系統會自動分析8條範例評論，幫您快速了解分析結果呈現方式。
+                </p>
+            </div>
+        </div>
+
+        <!-- 提示訊息 -->
+        <div id="messageContainer" class="message"></div>
+
+        <!-- 分析結果部分 -->
+        <div id="resultsContainer" class="hidden">
+            <div class="results-section">
+                <h2>📊 分析結果</h2>
+
+                <!-- 載入中 -->
+                <div id="loadingContainer" class="loading">
+                    <div class="spinner"></div>
+                    <p>正在分析中，請稍候...</p>
+                </div>
+
+                <!-- 統計摘要 -->
+                <div id="summaryContainer"></div>
+
+                <!-- 詳細結果標籤 -->
+                <div id="detailsContainer"></div>
+
+                <!-- 匯出按鈕 -->
+                <div class="export-buttons">
+                    <button class="btn-primary" onclick="exportJSON()">💾 匯出 JSON 報告</button>
+                    <button class="btn-primary" onclick="exportCSV()">💾 匯出 CSV 結果</button>
+                    <button class="btn-secondary" onclick="resetAnalysis()">🔄 重新分析</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 標籤頁切換
+        function switchTab(tabId) {
+            // 隱藏所有標籤內容
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // 移除所有標籤按鈕的活躍狀態
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // 顯示選定的標籤內容
+            document.getElementById(tabId).classList.add('active');
+
+            // 標記選定的按鈕為活躍
+            event.target.classList.add('active');
+        }
+
+        // 顯示提示訊息
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            container.textContent = message;
+            container.className = `message ${type} show`;
+
+            setTimeout(() => {
+                container.classList.remove('show');
+            }, 5000);
+        }
+
+        // 手動分析
+        async function analyzeManual() {
+            const textarea = document.getElementById('commentsInput');
+            const comments = textarea.value
+                .split('\n')
+                .map(c => c.trim())
+                .filter(c => c.length > 0);
+
+            if (comments.length === 0) {
+                showMessage('請輸入至少一條評論', 'error');
+                return;
+            }
+
+            showLoading(true);
+            document.getElementById('resultsContainer').classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/analyze/manual', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ comments })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data.results, data.report);
+                    showMessage('分析完成！', 'success');
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage(`錯誤：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 檔案分析
+        async function analyzeFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showMessage('請選擇一個檔案', 'error');
+                return;
+            }
+
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            const formData = new FormData();
+            formData.append('file', file);
+
+            if (fileExt === 'csv') {
+                formData.append('column_name', document.getElementById('columnName').value || 'comment');
+            } else if (fileExt === 'json') {
+                formData.append('column_key', document.getElementById('columnKey').value);
+            } else if (['xlsx', 'xls'].includes(fileExt)) {
+                formData.append('column_name', document.getElementById('columnName').value || 'comment');
+                formData.append('sheet_name', document.getElementById('sheetName').value || '0');
+            }
+
+            showLoading(true);
+            document.getElementById('resultsContainer').classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/analyze/file', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data.results, data.report);
+                    showMessage('分析完成！', 'success');
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage(`錯誤：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 範例分析
+        async function analyzeSample() {
+            const sampleComments = [
+                "新推出的功能真的太棒了，使用體驗提升很多，介面也更直覺！",
+                "這次更新有一些小問題，但整體方向還是不錯的。",
+                "非常失望，客服態度惡劣，完全不推薦。",
+                "中規中矩，沒有特別驚喜的地方，跟預期一樣。",
+                "我非常喜歡這項服務，已經推薦給朋友了，真的超值。",
+                "速度太慢了，經常當機，浪費我的時間。",
+                "功能齊全，價格合理，是不錯的選擇。",
+                "還可以，但是相比競爭對手就沒什麼優勢了。"
+            ];
+
+            showLoading(true);
+            document.getElementById('resultsContainer').classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/analyze/manual', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ comments: sampleComments })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data.results, data.report);
+                    showMessage('範例分析完成！', 'success');
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage(`錯誤：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 顯示載入狀態
+        function showLoading(show) {
+            const loading = document.getElementById('loadingContainer');
+            if (show) {
+                loading.style.display = 'block';
+                document.getElementById('summaryContainer').innerHTML = '';
+                document.getElementById('detailsContainer').innerHTML = '';
+            } else {
+                loading.style.display = 'none';
+            }
+        }
+
+        // 顯示結果
+        function displayResults(results, report) {
+            // 顯示統計摘要
+            const summary = report.統計摘要;
+            const summaryHTML = `
+                <div class="summary">
+                    <div class="summary-card">
+                        <h3>正面評論</h3>
+                        <div class="number">${summary.正面評論數}</div>
+                        <div class="percentage">${summary.正面比例}</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>中立評論</h3>
+                        <div class="number">${summary.中立評論數}</div>
+                        <div class="percentage">${summary.中立比例}</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>負面評論</h3>
+                        <div class="number">${summary.負面評論數}</div>
+                        <div class="percentage">${summary.負面比例}</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>總評論數</h3>
+                        <div class="number">${report.總評論數}</div>
+                        <div class="percentage">已分析</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('summaryContainer').innerHTML = summaryHTML;
+
+            // 顯示詳細結果表
+            const detailsHTML = `
+                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">詳細分析結果</h3>
+                <table class="details-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">序號</th>
+                            <th style="width: 25%;">原始評論</th>
+                            <th style="width: 65%;">AI 分析結果</th>
+                            <th style="width: 15%;">分析時間</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${results.map((result, idx) => `
+                            <tr>
+                                <td>${result.序號}</td>
+                                <td><div class="comment-text">${escapeHtml(result.原始評論)}</div></td>
+                                <td><div class="analysis-text">${escapeHtml(result.AI分析結果)}</div></td>
+                                <td>${result.分析時間}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            document.getElementById('detailsContainer').innerHTML = detailsHTML;
+        }
+
+        // HTML 轉義函數
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 檔案選擇處理
+        function handleFileSelect() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) return;
+
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            document.getElementById('fileName').textContent = `已選擇：${file.name}`;
+
+            // 顯示/隱藏對應的選項
+            document.getElementById('csvOptions').style.display = ['csv'].includes(fileExt) ? 'block' : 'none';
+            document.getElementById('jsonOptions').style.display = fileExt === 'json' ? 'block' : 'none';
+            document.getElementById('excelOptions').style.display = ['xlsx', 'xls'].includes(fileExt) ? 'block' : 'none';
+        }
+
+        // 清空手動輸入
+        function clearManualInput() {
+            document.getElementById('commentsInput').value = '';
+        }
+
+        // 清除檔案輸入
+        function clearFileInput() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileName').textContent = '';
+        }
+
+        // 匯出 JSON
+        async function exportJSON() {
+            try {
+                const response = await fetch('/api/export/json', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage(`匯出失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 匯出 CSV
+        async function exportCSV() {
+            try {
+                const response = await fetch('/api/export/csv', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage(`匯出失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 重置分析
+        async function resetAnalysis() {
+            try {
+                const response = await fetch('/api/reset', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('resultsContainer').classList.add('hidden');
+                    clearManualInput();
+                    clearFileInput();
+                    showMessage('已重置，可以開始新的分析', 'info');
+                }
+            } catch (error) {
+                showMessage(`重置失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 拖放功能
+        const fileInput = document.getElementById('fileInput');
+        const fileLabel = document.querySelector('.file-input-label');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, () => {
+                fileLabel.style.background = '#f0f0ff';
+                fileLabel.style.borderColor = '#667eea';
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, () => {
+                fileLabel.style.background = '';
+                fileLabel.style.borderColor = '';
+            }, false);
+        });
+
+        fileLabel.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            handleFileSelect();
+        }, false);
+    </script>
+</body>
+</html>
+
+
