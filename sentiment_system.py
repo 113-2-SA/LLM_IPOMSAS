@@ -1,8 +1,6 @@
 import os
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
-from langchain.chains import LLMChain
+from mistralai import Mistral
 import pandas as pd
 import jieba
 from datetime import datetime
@@ -14,18 +12,26 @@ load_dotenv()
 
 class SentimentAnalysisSystem:
     def __init__(self, api_key=None):
-        """初始化輿情分析系統"""
-        api_key = api_key or os.getenv("OPENAI_API_KEY")
+        """初始化輿情分析系統（使用 Mistral AI）"""
+        api_key = api_key or os.getenv("MISTRAL_API_KEY")
         
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
-            temperature=0.3,
-            api_key=api_key
-        )
+        if not api_key:
+            raise ValueError("MISTRAL_API_KEY 環境變數未設定")
         
-        # 定義情感分析提示詞
-        self.sentiment_prompt = ChatPromptTemplate.from_template("""
-你是一個專業的輿情分析專家。請詳細分析以下文本內容。
+        self.client = Mistral(api_key=api_key)
+        self.model = "mistral-large-latest"
+    
+    def preprocess_text(self, text):
+        """文本前處理：分詞、清理等"""
+        words = jieba.cut(text)
+        words = [w for w in words if len(w) > 1 and w.strip()]
+        return list(words)
+    
+    def analyze_single_comment(self, text):
+        """分析單一條評論"""
+        try:
+            # 建立分析提示詞
+            prompt = f"""你是一個專業的輿情分析專家。請詳細分析以下文本內容。
 
 【待分析文本】
 {text}
@@ -40,22 +46,23 @@ class SentimentAnalysisSystem:
 5. 輿情特點分析：用2-3句話說明這則文本的輿情特徵
 
 【回應格式】
-請直接按照上述編號順序回應，每項佔一行。
-        """)
+請直接按照上述編號順序回應，每項佔一行。"""
+            
+            # 使用 Mistral 進行分析
+            response = self.client.chat.complete(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.3,
+                max_tokens=1000
+            )
+            
+            return response.choices[0].message.content
         
-        self.sentiment_chain = self.sentiment_prompt | self.llm
-    
-    def preprocess_text(self, text):
-        """文本前處理：分詞、清理等"""
-        words = jieba.cut(text)
-        words = [w for w in words if len(w) > 1 and w.strip()]
-        return list(words)
-    
-    def analyze_single_comment(self, text):
-        """分析單一條評論"""
-        try:
-            result = self.sentiment_chain.invoke({"text": text})
-            return result.content
         except Exception as e:
             return f"分析錯誤：{str(e)}"
     
@@ -161,6 +168,7 @@ class SentimentAnalysisSystem:
         print("="*60)
         print(f"報告生成時間：{report['報告生成時間']}")
         print(f"分析評論總數：{report['總評論數']}")
+        print(f"使用模型：Mistral AI")
         print("-"*60)
         print(f"正面評論數：{summary['正面評論數']} ({summary['正面比例']})")
         print(f"中立評論數：{summary['中立評論數']} ({summary['中立比例']})")
