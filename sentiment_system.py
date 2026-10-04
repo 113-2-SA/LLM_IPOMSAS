@@ -19,7 +19,7 @@ class SentimentAnalysisSystem:
             raise ValueError("MISTRAL_API_KEY 環境變數未設定")
         
         self.client = Mistral(api_key=api_key)
-        self.model = "mistral-large-latest"
+        self.model = "mistral-small-latest"
     
     def preprocess_text(self, text):
         """文本前處理：分詞、清理等"""

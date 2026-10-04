@@ -1,12 +1,20 @@
+import sys
+import json
+import os
+from datetime import datetime
+import threading
+
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except AttributeError:
+    pass
+
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from sentiment_system import SentimentAnalysisSystem
 from data_loader import DataLoader
-import json
-import os
-from datetime import datetime
 from werkzeug.utils import secure_filename
-import threading
 
 app = Flask(__name__)
 CORS(app)
